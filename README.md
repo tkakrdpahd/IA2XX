@@ -1,0 +1,1 @@
+The project represented the culminating assignment for IA 210 Creative Coding, a course offered at the Maryland Institute College of Art.
