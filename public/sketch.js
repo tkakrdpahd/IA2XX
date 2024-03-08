@@ -1,47 +1,76 @@
-let firstClickX, firstClickY; // 첫 클릭 위치를 저장할 변수
-let currentAngle = 0; // 현재 회전 각도를 저장할 변수
-let clicked = false; // 클릭 여부를 확인하는 플래그
-let fadeOutDuration = 5000; // 사라지는 데 걸리는 시간 (5초)
-let fading = false; // 사라지는 중인지를 나타내는 플래그
-let alpha = 255; // 사각형의 투명도
-let lastPressedTime = 0; // 마지막으로 클릭한 시간을 저장하는 변수
+const socket = io();
+
+let spinner;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  socket.on("connections", (data)=>{
+
+    console.log(data);
+
+    positions = {};
+		shakes = {};
+		for(let i = 0; i < data.length; i++){
+			positions[data[i].id] = {x:0, y:0, ax: 0};
+			shakes[data[i].id] = {shakeVal:0};
+		}
+	});
+
+  // This is P5.JS class setting
+  spinner = new FidgetSpinner();
 }
 
 function draw() {
   background(220);
+  spinner.condition();
+}
 
-  if (clicked) {
-    // 마우스가 클릭되었으면 각도를 업데이트
-    currentAngle = atan2(mouseY - firstClickY, mouseX - firstClickX);
-    
-    // 사라지는 애니메이션 처리
-    if (fading) {
-      let elapsedTime = millis() - lastPressedTime;
-      alpha = map(elapsedTime, 0, fadeOutDuration, 255, 0);
-      alpha = max(alpha, 0); // 투명도가 음수가 되지 않도록 함
+class FidgetSpinner {
+  constructor() {
+    this.firstClickX;
+    this.firstClickY;
+    this.currentAngle = 0;
+    this.firstClickDetected = false;
+    this.fadeOutDuration = 5000; // 사라지는 데 걸리는 시간 (5초)
+    this.alpha = 255; // 사각형의 투명도
+    this.lastUpdateTime = 0; // 마지막으로 갱신된 시간
+    this.fading = false; // 사라지는 중인지 확인하는 플래그
+  }
+
+  condition() {
+    if (mouseIsPressed && !this.firstClickDetected) {
+      this.firstClickX = mouseX;
+      this.firstClickY = mouseY;
+      this.firstClickDetected = true;
+      this.fading = true;
+      this.lastUpdateTime = millis(); // 마지막 업데이트 시간을 현재로 설정
+    }
+  
+    if (this.firstClickDetected) {
+      this.currentAngle = atan2(mouseY - this.firstClickY, mouseX - this.firstClickX);
+  
+      // This is fading setting
+      if (this.fading) {
+        let elapsedTime = millis() - this.lastUpdateTime;
+        this.alpha = map(elapsedTime, 0, this.fadeOutDuration, 255, 0);
+        this.alpha = max(this.alpha, 0);
+  
+        if (this.alpha === 0) {
+          this.fading = false;
+          this.firstClickDetected = false;
+        }
+      }
+  
+      this.draw();
     }
   }
 
-  if (clicked || (fading && millis() - lastPressedTime <= fadeOutDuration)) {
-    push(); // 새로운 드로잉 상태 시작
-    translate(firstClickX, firstClickY); // 첫 클릭 위치로 이동
-    rotate(currentAngle); // 현재 계산된 각도로 회전
-    fill(255, alpha); // 사각형의 채우기 색상과 투명도 설정
-    rect(-26, -26, 52, 52); // 사각형 그리기
-    pop(); // 이전 드로잉 상태로 복귀
-  }
-}
-
-function mousePressed() {
-  // 첫 클릭 시에 위치 저장하고 클릭 플래그 설정
-  if (!clicked) {
-    firstClickX = mouseX;
-    firstClickY = mouseY;
-    clicked = true;
-    fading = true;
-    lastPressedTime = millis(); // 마지막 클릭 시간 업데이트
+  draw() {
+    push();
+    translate(this.firstClickX, this.firstClickY);
+    rotate(this.currentAngle);
+    fill(255, this.alpha);
+    rect(-26, -26, 52, 52);
+    pop();
   }
 }
