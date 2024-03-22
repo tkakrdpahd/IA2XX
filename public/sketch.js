@@ -17,6 +17,7 @@ function setup() {
   socket.on("serverPos", (receivedPosition) => {
     console.log(receivedPosition);
     // 서버에서 받은 위치 정보로 그리기
+    //background(220);
     spinner.draw(receivedPosition.x * windowWidth, receivedPosition.y * windowHeight, receivedPosition.r, true);
   });
 }
@@ -77,13 +78,8 @@ class FidgetSpinner {
 
   draw(x, y, r, fromServer) {
     push();
-    if (fromServer) {
-      // 서버에서 받은 좌표는 이미 픽셀 단위로 변환됨
-      translate(x, y);
-    } else {
-      // 로컬 좌표를 사용하는 경우
-      translate(x, y);
-    }
+    
+    translate(x, y);
     rotate(r);
     fill(255, this.alpha);
     rect(-26, -26, 52, 52);
