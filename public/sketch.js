@@ -3,21 +3,22 @@ const socket = io();
 let spinner;
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  // this is socket.io setting
   socket.on("connections", (data)=>{
+  //this data is id
+  console.log(data);
 
-    console.log(data);
-
-    positions = {};
-		shakes = {};
-		for(let i = 0; i < data.length; i++){
-			positions[data[i].id] = {x:0, y:0, ax: 0};
-			shakes[data[i].id] = {shakeVal:0};
-		}
+  positions = {};
+	shakes = {};
+	for(let i = 0; i < data.length; i++){
+		positions[data[i].id] = {x:0, y:0, ax: 0};
+		shakes[data[i].id] = {shakeVal:0};
+	}
 	});
-
   // This is P5.JS class setting
+  createCanvas(windowWidth, windowHeight);
   spinner = new FidgetSpinner();
+
 }
 
 function draw() {
@@ -39,15 +40,15 @@ class FidgetSpinner {
 
   condition() {
     if (mouseIsPressed && !this.firstClickDetected) {
-      this.firstClickX = mouseX;
-      this.firstClickY = mouseY;
+      this.firstClickX = mouseX / windowWidth;
+      this.firstClickY = mouseY / windowHeight;
       this.firstClickDetected = true;
       this.fading = true;
       this.lastUpdateTime = millis(); // 마지막 업데이트 시간을 현재로 설정
     }
   
     if (this.firstClickDetected) {
-      this.currentAngle = atan2(mouseY - this.firstClickY, mouseX - this.firstClickX);
+      this.currentAngle = atan2(mouseY - this.firstClickY * windowHeight, mouseX - this.firstClickX * windowWidth);
   
       // This is fading setting
       if (this.fading) {
@@ -60,17 +61,21 @@ class FidgetSpinner {
           this.firstClickDetected = false;
         }
       }
-  
       this.draw();
     }
   }
 
   draw() {
     push();
-    translate(this.firstClickX, this.firstClickY);
+    translate(this.firstClickX * windowWidth, this.firstClickY * windowHeight);
     rotate(this.currentAngle);
     fill(255, this.alpha);
     rect(-26, -26, 52, 52);
     pop();
+  }
+}
+
+class clientData {
+  constructor(data) {
   }
 }
