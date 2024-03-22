@@ -1,81 +1,98 @@
 const socket = io();
 
 let spinner;
+let positions = {}; // 전역 변수로 선언
 
 function setup() {
-  // this is socket.io setting
-  socket.on("connections", (data)=>{
-  //this data is id
-  console.log(data);
-
-  positions = {};
-	shakes = {};
-	for(let i = 0; i < data.length; i++){
-		positions[data[i].id] = {x:0, y:0, ax: 0};
-		shakes[data[i].id] = {shakeVal:0};
-	}
-	});
-  // This is P5.JS class setting
   createCanvas(windowWidth, windowHeight);
   spinner = new FidgetSpinner();
 
+  socket.on("connections", (data) => {
+    positions = {};
+    for (let i = 0; i < data.length; i++) {
+      positions[data[i].id] = { x: 0, y: 0, ax: 0 };
+    }
+  });
+
+  socket.on("serverPos", (receivedPosition) => {
+    console.log(receivedPosition);
+    // 서버에서 받은 위치 정보로 그리기
+    spinner.draw(receivedPosition.x * windowWidth, receivedPosition.y * windowHeight, receivedPosition.r, true);
+  });
 }
 
 function draw() {
-  background(220);
+  //background(220);
   spinner.condition();
 }
 
 class FidgetSpinner {
   constructor() {
-    this.firstClickX;
-    this.firstClickY;
+    this.firstClickX = 0; // 초기화
+    this.firstClickY = 0; // 초기화
     this.currentAngle = 0;
     this.firstClickDetected = false;
-    this.fadeOutDuration = 5000; // 사라지는 데 걸리는 시간 (5초)
-    this.alpha = 255; // 사각형의 투명도
-    this.lastUpdateTime = 0; // 마지막으로 갱신된 시간
-    this.fading = false; // 사라지는 중인지 확인하는 플래그
+    this.fadeOutDuration = 5000;
+    this.alpha = 255;
+    this.lastUpdateTime = 0;
+    this.fading = false;
   }
 
   condition() {
     if (mouseIsPressed && !this.firstClickDetected) {
-      this.firstClickX = mouseX / windowWidth;
-      this.firstClickY = mouseY / windowHeight;
+      this.firstClickX = mouseX;
+      this.firstClickY = mouseY;
       this.firstClickDetected = true;
       this.fading = true;
-      this.lastUpdateTime = millis(); // 마지막 업데이트 시간을 현재로 설정
+      this.lastUpdateTime = millis();
     }
-  
+
     if (this.firstClickDetected) {
-      this.currentAngle = atan2(mouseY - this.firstClickY * windowHeight, mouseX - this.firstClickX * windowWidth);
-  
-      // This is fading setting
+      let dx = mouseX - this.firstClickX;
+      let dy = mouseY - this.firstClickY;
+      this.currentAngle = atan2(dy, dx);
+
       if (this.fading) {
         let elapsedTime = millis() - this.lastUpdateTime;
         this.alpha = map(elapsedTime, 0, this.fadeOutDuration, 255, 0);
         this.alpha = max(this.alpha, 0);
-  
+
         if (this.alpha === 0) {
-          this.fading = false;
-          this.firstClickDetected = false;
+          this.reset();
         }
       }
-      this.draw();
+
+      const data = {
+        id: socket.id,
+        x: this.firstClickX / windowWidth,
+        y: this.firstClickY / windowHeight,
+        r: this.currentAngle
+      };
+
+      socket.emit("clientPos", data);
+      // 사용자의 클릭 위치로 그리기
+      this.draw(this.firstClickX, this.firstClickY, this.currentAngle, false);
     }
   }
 
-  draw() {
+  draw(x, y, r, fromServer) {
     push();
-    translate(this.firstClickX * windowWidth, this.firstClickY * windowHeight);
-    rotate(this.currentAngle);
+    if (fromServer) {
+      // 서버에서 받은 좌표는 이미 픽셀 단위로 변환됨
+      translate(x, y);
+    } else {
+      // 로컬 좌표를 사용하는 경우
+      translate(x, y);
+    }
+    rotate(r);
     fill(255, this.alpha);
     rect(-26, -26, 52, 52);
     pop();
   }
-}
 
-class clientData {
-  constructor(data) {
+  reset() {
+    this.fading = false;
+    this.firstClickDetected = false;
+    this.alpha = 255;
   }
 }
