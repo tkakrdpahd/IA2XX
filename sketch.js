@@ -1,4 +1,5 @@
 let img;
+let b;
 
 function preload() {
     img = loadImage('img/Home.png');
@@ -9,7 +10,12 @@ function setup() {
 }
 
 function draw() {
-    background(220);
+    background(0);
+
+    b = new Boundary(300, 100, 300, 300);
+
+    b.show();
+    // This is call png
 
     let targetWidth = windowWidth * 0.75;
     let targetHeight = windowHeight * 0.75;
