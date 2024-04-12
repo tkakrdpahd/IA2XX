@@ -1,7 +1,7 @@
 let img;
 
 function preload() {
-    img = loadImage('img/Background.jpg');
+    img = loadImage('img/Home.png');
 }
 
 function setup() {
@@ -33,8 +33,6 @@ function draw() {
 
     image(img, startX, startY, drawWidth, drawHeight);
 
-    line(0.421 * windowWidth, 0.34 * windowHeight, 0.421 * windowWidth, 0.496 * windowHeight);
-    line(0.421 * windowWidth, 0.34 * windowHeight, 0.458 * windowWidth, 0.34 * windowHeight);
     mouseLocation();
 }
 
