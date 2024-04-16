@@ -1,5 +1,5 @@
 let img;
-let b;
+let wall, ray;
 
 function preload() {
     img = loadImage('img/Home.png');
@@ -12,9 +12,22 @@ function setup() {
 function draw() {
     background(0);
 
-    b = new Boundary(300, 100, 300, 300);
+    // thhis is raytracing setting
+    wall = new Boundary(300, 100, 300, 300);
+    ray = new Ray(100, 200);
 
-    b.show();
+    wall.show();
+    ray.show();
+
+    let pt = ray.cast(wall);
+    console.log(pt);
+    // if (pt) {
+    //     fill(255);
+    //     ellipse(pt.x, pt.y, 8, 8);
+    // }
+
+    /*
+
     // This is call png
 
     let targetWidth = windowWidth * 0.75;
@@ -40,6 +53,8 @@ function draw() {
     image(img, startX, startY, drawWidth, drawHeight);
 
     mouseLocation();
+
+    */
 }
 
 function mouseLocation() {
