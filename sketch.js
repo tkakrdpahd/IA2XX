@@ -1,5 +1,8 @@
 let img;
-let wall, ray;
+let walls = [];
+let ray, particle;
+let xoff = 0;
+let yoff = 10000;
 
 function preload() {
     img = loadImage('img/Home.png');
@@ -8,23 +11,37 @@ function preload() {
 function setup() {
     createCanvas(windowWidth, windowHeight);
     // this is raytracing setting
-    wall = new Boundary(300, 100, 300, 300);
-    ray = new Ray(100, 200);
+    for (let i = 0; i < 5; i++) {
+        let x1 = random(width);
+        let x2 = random(width);
+        let y1 = random(height);
+        let y2 = random(height);
+        walls[i] = new Boundary(x1, y1, x2, y2);
+    }
+    particle = new Particle();
 }
 
 function draw() {
     background(0);
-
-    wall.show();
-    ray.show();
-    ray.lookAt(mouseX, mouseY);
-
-    let pt = ray.cast(wall);
-    console.log(pt);
-    if (pt) {
-         fill(255);
-         ellipse(pt.x, pt.y, 8, 8);
+    for (let wall of walls) {
+        wall.show();
     }
+    particle.update(noise(xoff) * width, noise(yoff) * height);
+    particle.show();
+    particle.look(walls);
+
+    xoff += 0.01;
+    yoff += 0.01;
+
+    // ray.show();
+    // ray.lookAt(mouseX, mouseY);
+
+    // let pt = ray.cast(wall);
+    // console.log(pt);
+    // if (pt) {
+    //      fill(255);
+    //      ellipse(pt.x, pt.y, 8, 8);
+    // }
 
     /*
     // This is call png
@@ -51,10 +68,10 @@ function draw() {
     */
 }
 
-// function mouseLocation() {
-//     let normalizedX = mouseX / windowWidth;
-//     let normalizedY = mouseY / windowHeight;
-//     if (mouseIsPressed === true) {
-//         console.log(normalizedX, normalizedY);
-//     }
-// }
+function mouseLocation() {
+    let normalizedX = mouseX / windowWidth;
+    let normalizedY = mouseY / windowHeight;
+    if (mouseIsPressed === true) {
+        console.log(normalizedX, normalizedY);
+    }
+}
