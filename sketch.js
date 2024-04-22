@@ -32,11 +32,24 @@ function setup() {
     walls.push(new Boundary(-1, height, -1, -1));
 
     for (let i = 0; i < json.length; i += 1) {
-        walls.push(new Boundary(json[i][0]*vwr, json[i][1]*height, json[i][2]*vwr, json[i][3]*height));
-        walls.push(new Boundary(json[i][2]*vwr, json[i][3]*height, json[i][4]*vwr, json[i][5]*height));
-        walls.push(new Boundary(json[i][4]*vwr, json[i][5]*height, json[i][6]*vwr, json[i][7]*height));
-        walls.push(new Boundary(json[i][6]*vwr, json[i][7]*height, json[i][0]*vwr, json[i][1]*height));
-    }
+        let type = json[i][0]; // 'c' 또는 'o'
+        let points = json[i].slice(1); // 첫 번째 요소를 제외한 나머지는 점들의 좌표
+    
+        for (let j = 0; j < points.length - 2; j += 2) {
+            walls.push(new Boundary(
+                points[j] * vwr, points[j + 1] * vhr,  // 현재 점
+                points[j + 2] * vwr, points[j + 3] * vhr // 다음 점
+            ));
+        }
+    
+        if (type === 'c' && points.length >= 4) {
+            // 폐쇄형이면 마지막 점과 처음 점을 연결
+            walls.push(new Boundary(
+                points[points.length - 2] * vwr, points[points.length - 1] * vhr, // 마지막 점
+                points[0] * vwr, points[1] * vhr // 처음 점
+            ));
+        }
+    }    
 
     particle = new Particle(); // make particleN
 }
